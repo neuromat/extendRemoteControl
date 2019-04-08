@@ -88,4 +88,78 @@ class RemoteControlHandler extends remotecontrol_handle
             'permission'=>\Permission::model()->hasSurveyPermission($iSurveyID, $sPermission, $sCRUD),
         );
     }
+
+    /**
+     * @param PclZip $zip
+     * @param string $name
+     * @param string $full_name
+     */
+    private function _addToZip($zip, $name, $full_name)
+    {
+        $zip->add(
+            array(
+                array(
+                    PCLZIP_ATT_FILE_NAME => $name,
+                    PCLZIP_ATT_FILE_NEW_FULL_NAME => $full_name
+                )
+            )
+        );
+    }
+
+    /**
+     * RPC Routine to export survey archive with structure, tokens and reponses
+     *
+     * @param $sessionKey
+     * @param $SurveyID
+     * @return string
+     * @throws CException
+     */
+    public function export_survey($sSessionKey, $iSurveyID)
+    {
+        $aSurveyInfo = getSurveyInfo($iSurveyID);
+
+        $sTempDir = Yii::app()->getConfig("tempdir");
+
+        $aZIPFileName = $sTempDir . DIRECTORY_SEPARATOR . randomChars(30);
+        $sLSSFileName = $sTempDir . DIRECTORY_SEPARATOR . randomChars(30);
+        $sLSRFileName = $sTempDir . DIRECTORY_SEPARATOR . randomChars(30);
+        $sLSTFileName = $sTempDir . DIRECTORY_SEPARATOR . randomChars(30);
+        $sLSIFileName = $sTempDir . DIRECTORY_SEPARATOR . randomChars(30);
+
+        Yii::import('application.libraries.admin.pclzip', TRUE);
+        $zip = new PclZip($aZIPFileName);
+
+        Yii::app()->loadHelper('export');
+        file_put_contents($sLSSFileName, surveyGetXMLData($iSurveyID));
+
+        $this->_addToZip($zip, $sLSSFileName, 'survey_' . $iSurveyID . '.lss');
+
+        unlink($sLSSFileName);
+
+        if ( $aSurveyInfo['active'] == 'Y' )
+        {
+            getXMLDataSingleTable($iSurveyID, 'survey_' . $iSurveyID, 'Responses', 'responses', $sLSRFileName, FALSE);
+            $this->_addToZip($zip, $sLSRFileName, 'survey_' . $iSurveyID . '_responses.lsr');
+            unlink($sLSRFileName);
+        }
+
+        if ( tableExists('{{tokens_' . $iSurveyID . '}}') )
+        {
+            getXMLDataSingleTable($iSurveyID, 'tokens_' . $iSurveyID, 'Tokens', 'tokens', $sLSTFileName);
+            $this->_addToZip($zip, $sLSTFileName, 'survey_' . $iSurveyID . '_tokens.lst');
+            unlink($sLSTFileName);
+        }
+
+        if ( tableExists('{{survey_' . $iSurveyID . '_timings}}') )
+        {
+            getXMLDataSingleTable($iSurveyID, 'survey_' . $iSurveyID . '_timings', 'Timings', 'timings', $sLSIFileName);
+            $this->_addToZip($zip, $sLSIFileName, 'survey_' . $iSurveyID . '_timings.lsi');
+            unlink($sLSIFileName);
+        }
+
+        if ( is_file($aZIPFileName) )
+        {
+            return($aZIPFileName);
+        }
+    }
 }
