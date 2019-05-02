@@ -1,5 +1,6 @@
 # extendRemoteControl
-Demo plugin to show how to extend remote control in API
+Extends LimeSurvey Remote Control API with new methods
+Based in demo plugin from Denis Chenu (credits at the bottom)
 
 ## Installation
 
@@ -39,11 +40,8 @@ You can call the new function with the link shown in plugin settings. If you pub
 
 Since authentification and `get_session_key` is the same function, you can create the session key with the core remote control url and use it in the plugin remote control url. This allow different plugin with different function. Using same control key.
 
-## Home page & Copyright
+## Home page & Copyright of the author and Neuromat Time
 - HomePage <http://extensions.sondages.pro/extendremotecontrol/>
 - Copyright © 2015-2016 Denis Chenu <http://sondages.pro>
+- Copyright © 2019 Neuromat Technology Transfering Time <https://neuromat.numec.prp.usp.br/>
 - Licence : GNU General Public License <https://www.gnu.org/licenses/gpl-3.0.html>
-
-## Support
-- Issues <https://gitlab.com/SondagesPro/RemoteControl/extendRemoteControl/issues>
-- Professional support <http://extensions.sondages.pro/1>
