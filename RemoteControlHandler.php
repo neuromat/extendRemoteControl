@@ -165,7 +165,10 @@ class RemoteControlHandler extends remotecontrol_handle
 
         if ( is_file($aZIPFileName) )
         {
-            return($aZIPFileName);
+            $handle = fopen($aZIPFileName, 'rb');
+            $fsize = filesize($aZIPFileName);
+            $content = fread($handle, $fsize);
+            return(base64_encode($content));
         }
     }
 
