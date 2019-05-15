@@ -193,10 +193,10 @@ class RemoteControlHandler extends remotecontrol_handle
         $oSurvey=Survey::model()->findByPk($iSurveyID);
         if (is_null($oSurvey))
         {
-            return array('Status' => 'Error: Invalid survey ID');
+            return array('status' => 'Error: Invalid survey ID');
         }
         if ($oSurvey->getAttribute('active') !== 'Y') {
-            return array('Status' => 'Error: Survey is not active.');
+            return array('status' => 'Error: Survey is not active.');
         }
 
         $previousStatus = $oSurvey->getAttribute('alloweditaftercompletion');
@@ -208,7 +208,7 @@ class RemoteControlHandler extends remotecontrol_handle
         if (Permission::model()->hasSurveyPermission($iSurveyID, 'responses', 'update')) {
             if (!Yii::app()->db->schema->getTable('{{survey_' . $iSurveyID . '}}')) {
                 $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-                return array('Status' => 'Error: No survey response table');
+                return array('status' => 'Error: No survey response table');
             }
 
             if (
@@ -216,7 +216,7 @@ class RemoteControlHandler extends remotecontrol_handle
                 && ! isset($aResponseData['token'])
             ) {
                 $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-                return array('Status' => 'Error: Missing response identifier (id|token).');
+                return array('status' => 'Error: Missing response identifier (id|token).');
             }
 
             SurveyDynamic::sid($iSurveyID);
@@ -230,18 +230,18 @@ class RemoteControlHandler extends remotecontrol_handle
 
             if(empty($aResponses)) {
                 $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-                return array('Status' => 'Error: No matching Response.');
+                return array('status' => 'Error: No matching Response.');
             }
             if(count($aResponses) > 1) {
                 $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-                return array('Status' => 'Error: More then one matching response, updateing multiple responses at once is not supported.');
+                return array('status' => 'Error: More then one matching response, updating multiple responses at once is not supported.');
             }
 
             $aBasicDestinationFields=$oSurveyDynamic->tableSchema->columnNames;
             $aInvalidFields= array_diff_key($aResponseData, array_flip($aBasicDestinationFields));
             if(count($aInvalidFields) > 0) {
                 $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-                return array('Status' => 'Error: Invalid Column names supplied: ' . implode(', ', array_keys($aInvalidFields)));
+                return array('status' => 'Error: Invalid Column names supplied: ' . implode(', ', array_keys($aInvalidFields)));
             }
 
             unset($aResponseData['token']);
@@ -254,13 +254,13 @@ class RemoteControlHandler extends remotecontrol_handle
 
             $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
             if ($bResult) {
-                return $bResult;
+                return array('status' => 'OK');
             } else {
-                return array('Status' => 'Unable to edit response');
+                return array('status' => 'Unable to edit response');
             }
         } else {
             $oSurvey->setAttribute('alloweditaftercompletion', $previousStatus);
-            return array('Status' => 'No permission');
+            return array('status' => 'No permission');
         }
     }
 
